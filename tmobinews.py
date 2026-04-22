@@ -52,13 +52,6 @@ def chunk_list(data, size):
     for i in range(0, len(data), size):
         yield data[i:i + size]
 
-def convert_to_naver(url):
-    if "news.naver.com" in url:
-        return url
-    if "n.news.naver.com" in url:
-        return url
-    return url
-
 try:
     for category, keywords in KEYWORDS.items():
         print(f"\n===== {category} =====\n")
@@ -102,8 +95,7 @@ try:
                         continue
             
                     seen_links.add(href)
-                    naver_url = convert_to_naver(href)
-                    all_news.append((text, naver_url, category))
+                    all_news.append((text, href, category))
             
                 except Exception:
                     continue
