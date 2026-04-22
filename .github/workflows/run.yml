@@ -1,8 +1,6 @@
 name: run
 
 on:
-  schedule:
-    - cron: '0 23 * * 1-5'
   workflow_dispatch:
 
 jobs:
