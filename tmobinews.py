@@ -52,6 +52,13 @@ def chunk_list(data, size):
     for i in range(0, len(data), size):
         yield data[i:i + size]
 
+def convert_to_naver(url):
+    if "news.naver.com" in url:
+        return url
+    if "n.news.naver.com" in url:
+        return url
+    return url
+
 try:
     for category, keywords in KEYWORDS.items():
         print(f"\n===== {category} =====\n")
@@ -68,43 +75,39 @@ try:
                 driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                 time.sleep(1)
 
-            news_areas = driver.find_elements(By.CSS_SELECTOR, "div.news_area")
+            links = driver.find_elements(By.TAG_NAME, "a")
             
-            for area in news_areas:
+            for link in links:
                 try:
-                    title_tag = area.find_element(By.CSS_SELECTOR, "a.news_tit")
-                    title = title_tag.text.strip()
+                    text = link.text.strip()
+                    href = link.get_attribute("href")
             
-                    info_links = area.find_elements(By.CSS_SELECTOR, "a.info")
-            
-                    href = None
-            
-                    # 네이버 뉴스 우선
-                    for link in info_links:
-                        temp = link.get_attribute("href")
-                        if "news.naver.com" in temp:
-                            href = temp
-                            break
-            
-                    # 없으면 원문 사용
-                    if not href and info_links:
-                        href = info_links[0].get_attribute("href")
-            
-                    if not href:
+                    if not text or not href:
                         continue
             
-                    if len(title) < 15 or len(title) > 60:
+                    if "news" not in href:
+                        continue
+            
+                    if any(x in href for x in [
+                        "blog", "cafe", "help", "search",
+                        "channelPromotion", "sports", "entertain",
+                        "inflow", "ader"
+                    ]):
+                        continue
+            
+                    if len(text) < 15 or len(text) > 60:
                         continue
             
                     if href in seen_links:
                         continue
             
                     seen_links.add(href)
-                    all_news.append((title, href, category))
+                    naver_url = convert_to_naver(href)
+                    all_news.append((text, naver_url, category))
             
                 except Exception:
                     continue
-                
+                            
 finally:
     driver.quit()
 
